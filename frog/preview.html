@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>カエル一覧(確認用)</title>
+<style>
+body{margin:0;padding:16px;font-family:-apple-system,"Hiragino Sans",sans-serif;background:#f2faf7;color:#1d2b26}
+h1{font-size:20px;margin:0 0 4px}h2{font-size:16px;margin:24px 0 8px}
+.tools{display:flex;gap:8px;margin:12px 0;flex-wrap:wrap}
+.tools button{border:1px solid #2e8c6e;background:#fff;color:#2e8c6e;border-radius:99px;padding:8px 14px;font-size:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.cell{border-radius:12px;padding:8px;text-align:center;background:#fff}
+.cell img{width:100%;max-width:130px;height:auto;display:block;margin:0 auto 6px}
+.cell b{font-size:13px}.cell small{display:block;color:#6b7f77;font-size:11px}
+body.dark .cell{background:#1d2b26;color:#fff}
+body.check .cell{background-color:#fff;background-image:linear-gradient(45deg,#e6efeb 25%,transparent 25%,transparent 75%,#e6efeb 75%),linear-gradient(45deg,#e6efeb 25%,transparent 25%,transparent 75%,#e6efeb 75%);background-size:16px 16px;background-position:0 0,8px 8px}
+</style></head><body>
+<h1>薬剤師学習アプリ カエル一覧(確認用)</h1>
+<div style="color:#6b7f77;font-size:13px">背景を切り替えて、透過・見え方を確認できます。</div>
+<div class="tools">
+  <button data-bg="">白背景</button><button data-bg="dark">暗い背景</button><button data-bg="check">透過の確認</button>
+</div>
+<h2>顔だけ(frog/face/)</h2><div class="grid" id="face"></div>
+<h2>全身(frog/body/)</h2><div class="grid" id="body"></div>
+<script>
+const list = [['joy','喜'],['angry','怒'],['sad','哀'],['fun','楽'],['surprise','驚き'],
+              ['fight','がんばる'],['shy','照れる'],['worry','困る・悩む'],['understand','理解した']];
+let missing = 0;
+for (const kind of ['face', 'body'])
+  document.getElementById(kind).innerHTML = list.map(([f, n]) =>
+    `<div class="cell"><img src="${kind}/${f}.svg" alt="${n}" onerror="this.style.outline='2px solid red';this.alt='読み込み失敗'"><b>${n}</b><small>${kind}/${f}.svg</small></div>`).join('');
+document.querySelectorAll('.tools button').forEach(b => b.onclick = () => { document.body.className = b.dataset.bg; });
+</script>
+</body></html>
