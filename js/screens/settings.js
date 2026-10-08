@@ -19,11 +19,16 @@ Screens.settings = async function () {
       <div class="lbl">復元</div>
       <label class="radiorow"><input type="radio" name="mode" value="merge" checked> 追加する(今あるデータは残し、重複はスキップ)</label>
       <label class="radiorow"><input type="radio" name="mode" value="replace"> 置き換える(今のデータをすべて消して復元)</label>
+      <div class="stop" id="stop" hidden>${Frog.img('angry', 'body', 80)}
+        <div><b>ちょっと待って!</b><div class="tiny">今のデータがすべて消えます。先にバックアップを保存しましたか?</div></div></div>
       <input type="file" id="file" accept=".json,application/json,text/plain">
       <button class="btn ghost" id="restore">復元する</button>
     </div>`);
   const $ = s => root.querySelector(s);
   $('#back').onclick = () => App.back();
+  root.querySelectorAll('input[name=mode]').forEach(r => r.onchange = () => {
+    $('#stop').hidden = root.querySelector('input[name=mode]:checked').value !== 'replace';
+  });
 
   $('#share').onclick = async () => {
     const text = JSON.stringify(await Backup.export(), null, 2);
@@ -31,20 +36,20 @@ Screens.settings = async function () {
     const name = `pharma-backup-${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}.json`;
     const file = new File([text], name, { type: 'application/json' });
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      try { await navigator.share({ files: [file], title: name }); Backup.markDone(); toast('保存しました'); App.show(); return; }
+      try { await navigator.share({ files: [file], title: name }); Backup.markDone(); toast('保存しました', 'joy'); App.show(); return; }
       catch (e) { if (e.name === 'AbortError') return; }     // キャンセルは何もしない
     }
     const a = document.createElement('a');                    // 共有できない環境ではダウンロード
     a.href = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
     a.download = name; document.body.append(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 10000);
-    Backup.markDone(); toast('ダウンロードしました');
+    Backup.markDone(); toast('ダウンロードしました', 'joy');
   };
 
   $('#copy').onclick = async () => {
     try {
       await navigator.clipboard.writeText(JSON.stringify(await Backup.export()));
-      Backup.markDone(); toast('コピーしました。メモなどに貼り付けて保管してください'); App.show();
+      Backup.markDone(); toast('コピーしました。メモなどに貼り付けて保管してください', 'joy'); App.show();
     } catch { toast('コピーできませんでした'); }
   };
 
@@ -61,7 +66,7 @@ Screens.settings = async function () {
     if (!confirm(msg)) return;
     try {
       const a = await Backup.import(data, mode);
-      toast(`復元しました(疑問${a.questions}件・問題${a.quizzes}件)`);
+      toast(`復元しました(疑問${a.questions}件・問題${a.quizzes}件)`, 'joy');
       App.show();
     } catch (e) { toast('復元に失敗しました: ' + e.message); }
   };
