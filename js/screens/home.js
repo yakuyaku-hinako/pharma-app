@@ -14,9 +14,17 @@ Screens.home = async function () {
   const message = d.items.length === 0 ? '問題がありません'
     : newN === 0 ? 'すべて回答済みです(復習は続けられます)' : '';
 
+  const hasData = (await DB.getAll('questions')).length > 0;
+  const last = Backup.lastDate();
+  const days = last ? Math.floor((Date.now() - last) / 86400000) : null;
+  const notice = hasData && (days === null || days >= 14)
+    ? `<div class="card warn">💾 ${days === null ? 'まだバックアップがありません' : days + '日間バックアップしていません'}
+        <button class="link" id="bk">バックアップする ›</button></div>` : '';
+
   const root = node(`
     <div class="hero"><div class="frog">🐸</div>
       <div><h1>薬剤師学習</h1><div class="muted">一歩ずつ、できることを増やしていこう!</div></div></div>
+    ${notice}
     <div class="card">
       <div class="streak">🔥 <b>${streak}</b>日連続学習中</div>
       <div class="dots">${dots.map(on => `<i class="dot ${on ? 'on' : ''}"></i>`).join('')}</div>
@@ -39,6 +47,8 @@ Screens.home = async function () {
       .map(x => x.id);
     if (ids.length) App.open(Screens.quiz, { ids });
   };
+  const bk = root.querySelector('#bk');
+  if (bk) bk.onclick = () => App.switchTab('stats').then(() => App.open(Screens.settings));
   root.querySelector('#reg').onclick = () => App.switchTab('register');
   return root;
 };
