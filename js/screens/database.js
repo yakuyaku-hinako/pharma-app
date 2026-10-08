@@ -22,7 +22,7 @@ Screens.database = async function () {
     const hit = entries.filter(e =>
       (DBView.cat === 'all' || e.question.categoryId === DBView.cat) && Learn.matches(e, DBView.q));
     $('#list').innerHTML = hit.length === 0
-      ? `<div class="card muted">${entries.length === 0 ? 'まだ学習内容がありません' : '該当する学習内容がありません'}</div>`
+      ? `<div class="card muted center">${Frog.img('worry', 'face', 80)}<div>${entries.length === 0 ? 'まだ学習内容がありません' : '該当する学習内容がありません'}</div></div>`
       : hit.map(e => `
         <div class="card tap" data-id="${e.question.id}">
           <div class="meta"><span class="badge">${esc(e.category?.name || '')}</span>
