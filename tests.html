@@ -90,6 +90,17 @@ async function setup() { // カテゴリ・疑問・ノート・問題を1つず
     eq(failed, 3);
   });
 
+  await test('問題の更新(正解の変更・不正値は拒否)', async () => {
+    const { quiz } = await setup();
+    const ch = { A: 'a', B: 'b', C: 'c', D: 'd' };
+    const u = await DB.updateQuiz(quiz.id, { questionText: '新', choices: ch, correctAnswer: 'C' });
+    eq(u.correctAnswer, 'C'); eq((await DB.get('quizzes', quiz.id)).questionText, '新');
+    let failed = 0;
+    try { await DB.updateQuiz(quiz.id, { questionText: '新', choices: ch, correctAnswer: 'E' }); } catch { failed++; }
+    try { await DB.updateQuiz(quiz.id, { questionText: '', choices: ch, correctAnswer: 'A' }); } catch { failed++; }
+    eq(failed, 2);
+  });
+
   const ng = results.filter(r => !r[1]).length;
   document.getElementById('summary').textContent =
     ng === 0 ? `✅ すべて合格(${results.length}件)` : `❌ ${ng}件失敗 / ${results.length}件`;
