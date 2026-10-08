@@ -41,7 +41,7 @@ Screens.note = async function ({ questionId }) {
       myAnswer: $('#ma').value.trim(),
       pharmacistPoint: $('#pp').value.trim()
     });
-    toast('学習ノートを保存しました');
+    toast('学習ノートを保存しました', 'understand');
     return saved;
   }
 
