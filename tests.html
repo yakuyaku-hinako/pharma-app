@@ -8,6 +8,7 @@
 <script src="js/db.js"></script>
 <script src="js/backup.js"></script>
 <script src="js/learn.js"></script>
+<script src="js/frog.js"></script>
 <script>
 const results = [];
 const eq = (a, b, msg) => { if (a !== b) throw new Error(`${msg || ''} 期待:${b} 実際:${a}`); };
@@ -173,6 +174,19 @@ async function setup() { // カテゴリ・疑問・ノート・問題を1つず
     try { await Backup.import({ app: 'other' }, 'replace'); } catch { failed++; }
     try { await Backup.import({ app: 'pharma-app', schemaVersion: 1, categories: [] }, 'replace'); } catch { failed++; }
     eq(failed, 2); eq((await DB.getAll('questions')).length, 1);
+  });
+
+  await test('カエル画像(顔9枚・全身9枚)がすべて読み込める', async () => {
+    const bad = [];
+    await Promise.all(Frog.NAMES.flatMap(n => ['face', 'body'].map(k => new Promise(res => {
+      const i = new Image(); i.onload = () => res();
+      i.onerror = () => { bad.push(k + '/' + n); res(); }; i.src = Frog.src(n, k);
+    }))));
+    eq(bad.length, 0, '読み込めない: ' + bad.join(', '));
+  });
+  await test('Frog.img: 不明な表情名は喜に置き換える', () => {
+    eq(Frog.img('xxx').includes('face/joy.svg'), true);
+    eq(Frog.img('worry', 'body', 50).includes('body/worry.svg'), true);
   });
 
   const ng = results.filter(r => !r[1]).length;
