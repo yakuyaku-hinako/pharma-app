@@ -123,6 +123,29 @@ async function setup() { // カテゴリ・疑問・ノート・問題を1つず
     d = await Learn.load(); eq(d.items[0].note, null, '情報源なし');
   });
 
+  await test('検索: 疑問・調べた内容・自分の回答・タグ/全角半角/AND', async () => {
+    await freshDB();
+    const cat = (await DB.getAll('categories'))[0];
+    const q = await DB.addQuestion({ categoryId: cat.id, content: 'DOACとNSAIDs', tags: ['相互作用'] });
+    await DB.saveNote(q.id, { researchedContent: '消化管出血', myAnswer: '患者背景を確認' });
+    const e = (await Learn.loadNotes()).entries[0];
+    eq(Learn.matches(e, 'nsaids'), true, '大小文字'); eq(Learn.matches(e, 'ＮＳＡＩＤｓ'), true, '全角');
+    eq(Learn.matches(e, '出血'), true, '調べた内容'); eq(Learn.matches(e, '患者背景'), true, '自分の回答');
+    eq(Learn.matches(e, '相互作用'), true, 'タグ'); eq(Learn.matches(e, 'NSAIDs 出血'), true, 'AND');
+    eq(Learn.matches(e, 'NSAIDs 腎機能'), false); eq(Learn.matches(e, ''), true);
+  });
+  await test('データベース一覧: ★と情報源なしの分離', async () => {
+    const { note, quiz } = await setup();
+    let r = await Learn.loadNotes();
+    eq(r.entries[0].stars, 0, '未回答'); eq(r.entries[0].last, null);
+    await DB.answerQuiz(quiz.id, 'B');
+    r = await Learn.loadNotes();
+    eq(r.entries[0].stars, 3); eq(r.entries[0].total, 1);
+    await DB.deleteQuestion(r.entries[0].question.id);
+    r = await Learn.loadNotes();
+    eq(r.entries.length, 0); eq(r.orphans.length, 1, '問題は情報源なしで残る');
+  });
+
   const ng = results.filter(r => !r[1]).length;
   document.getElementById('summary').textContent =
     ng === 0 ? `✅ すべて合格(${results.length}件)` : `❌ ${ng}件失敗 / ${results.length}件`;
