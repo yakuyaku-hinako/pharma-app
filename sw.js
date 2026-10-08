@@ -1,7 +1,7 @@
 // コードを更新して再公開するときは、この番号を上げてください(例: v5)
-const CACHE = 'pharma-app-v5';
+const CACHE = 'pharma-app-v6';
 const FILES = ['./', './index.html', './style.css', './manifest.json',
-  './js/stats.js', './js/db.js', './js/ui.js', './js/learn.js', './js/screens/home.js', './js/screens/quiz.js',
+  './js/stats.js', './js/db.js', './js/ui.js', './js/learn.js', './js/screens/home.js', './js/screens/database.js', './js/screens/noteDetail.js', './js/screens/quiz.js',
   './js/screens/register.js', './js/screens/note.js', './js/screens/quizEdit.js',
   './js/app.js', './icons/icon-180.png'];
 
