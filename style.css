@@ -91,3 +91,12 @@ input[type=radio]{width:auto}
 .banner.ng{background:#d9534f;color:#fff}
 .score{font-size:24px;font-weight:700;color:var(--primary);margin-top:6px}
 .link{color:var(--primary);font-weight:600;font-size:14px}
+
+/* ---- データベース ---- */
+input[type=search]{margin-bottom:10px}
+.filter{margin:0 0 12px}
+.chip.pill{border:1px solid #cfe3da;background:#fff;color:var(--sub);font-size:14px;padding:6px 14px}
+.chip.pill.on{background:var(--primary);color:#fff;border-color:var(--primary)}
+.stars{color:#e0a800;font-size:14px;letter-spacing:1px}
+.qrow{border-top:1px solid #e3efe9;padding:10px 0}
+details summary{cursor:pointer;font-weight:600;color:var(--sub)}
