@@ -36,5 +36,30 @@ const Learn = {
       return { quiz, note, question, category, histories: hs, isNew: Stats.isNew(hs) };
     });
     return { items, histories, cats, catOfQuiz };
+  },
+  // ノート単位の一覧(データベース画面用)。情報源なしの問題は orphans に分ける
+  async loadNotes() {
+    const d = await Learn.load();
+    const [notes, questions] = await Promise.all([DB.getAll('notes'), DB.getAll('questions')]);
+    const qM = Object.fromEntries(questions.map(q => [q.id, q]));
+    const cM = Object.fromEntries(d.cats.map(c => [c.id, c]));
+    const entries = notes.filter(n => qM[n.questionId]).map(note => {
+      const question = qM[note.questionId];
+      const quizItems = d.items.filter(i => i.quiz.noteId === note.id);
+      const hs = quizItems.flatMap(i => i.histories);
+      const correct = hs.filter(h => h.isCorrect).length;
+      const last = hs.length ? hs.map(h => h.answeredAt).sort().pop() : null;
+      return { note, question, category: cM[question.categoryId] || null, quizItems,
+               total: hs.length, correct, stars: Stats.stars(correct, hs.length), last };
+    }).sort((a, b) => b.note.updatedAt.localeCompare(a.note.updatedAt));
+    return { entries, orphans: d.items.filter(i => !i.note), cats: d.cats };
+  },
+
+  // 検索: 疑問・調べた内容・自分の回答・タグ。空白区切りは AND。全角/半角・大小文字は区別しない
+  matches(entry, query) {
+    const norm = t => String(t || '').normalize('NFKC').toLowerCase();
+    const hay = norm([entry.question.content, entry.note.researchedContent,
+      entry.note.myAnswer, ...(entry.question.tags || [])].join('\n'));
+    return norm(query).split(/\s+/).filter(Boolean).every(w => hay.includes(w));
   }
 };
