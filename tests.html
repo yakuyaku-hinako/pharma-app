@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
+<title>テスト</title>
+<style>body{font-family:sans-serif;padding:16px}.ok{color:#1a7f4b}.ng{color:#c00;font-weight:bold}</style>
+</head><body>
+<h2>自動テスト</h2><p id="summary">実行中…</p><ul id="log"></ul>
+<script src="js/stats.js"></script>
+<script src="js/db.js"></script>
+<script>
+const results = [];
+const eq = (a, b, msg) => { if (a !== b) throw new Error(`${msg || ''} 期待:${b} 実際:${a}`); };
+async function test(name, fn) {
+  try { await fn(); results.push([name, true]); }
+  catch (e) { results.push([name, false, e.message]); }
+}
+async function freshDB() { await DB.open('test-' + Math.random()); await DB.seedIfNeeded(); }
+async function setup() { // カテゴリ・疑問・ノート・問題を1つずつ作る
+  await freshDB();
+  const cat = (await DB.getAll('categories'))[0];
+  const q = await DB.addQuestion({ categoryId: cat.id, content: '疑問' });
+  const note = await DB.saveNote(q.id, { researchedContent: '調査', myAnswer: '回答' });
+  const quiz = await DB.addQuiz({ noteId: note.id, questionText: 'Q',
+    choices: { A: 'a', B: 'b', C: 'c', D: 'd' }, correctAnswer: 'B' });
+  return { cat, q, note, quiz };
+}
+
+(async () => {
+  await test('★の境界値', () => {
+    eq(Stats.stars(0, 0), 0); eq(Stats.stars(9, 10), 3); eq(Stats.stars(89, 100), 2);
+    eq(Stats.stars(5, 10), 2); eq(Stats.stars(49, 100), 1);
+  });
+  await test('理解度(回答なしは0%)', () => {
+    eq(Stats.accuracyPercent(0, 0), 0); eq(Stats.accuracyPercent(76, 100), 76);
+  });
+  await test('正誤判定(まだ不安は不正解)', () => {
+    eq(Stats.judge('B', 'B'), true); eq(Stats.judge('A', 'B'), false); eq(Stats.judge('unsure', 'B'), false);
+  });
+  await test('新規/復習の判定', () => {
+    const h = (t, ok) => ({ answeredAt: t, isCorrect: ok });
+    eq(Stats.isNew([]), true);
+    eq(Stats.isNew([h('2026-01-01', false), h('2026-01-02', true)]), false);
+    eq(Stats.isNew([h('2026-01-02', true), h('2026-01-01', false)]), false, '順序に依存しない');
+    eq(Stats.isNew([h('2026-01-01', true), h('2026-01-03', false)]), true);
+  });
+  await test('連続学習日数', () => {
+    const today = new Date(2026, 9, 8, 12);
+    const d = n => { const x = new Date(today); x.setDate(x.getDate() - n); return x; };
+    eq(Stats.streak([], today), 0);
+    eq(Stats.streak([d(0), d(1), d(2)], today), 3);
+    eq(Stats.streak([d(1), d(2)], today), 2, '今日未回答でも維持');
+    eq(Stats.streak([d(2), d(3)], today), 0, '途切れ');
+  });
+  await test('7日ドット', () => {
+    const today = new Date(2026, 9, 8, 12);
+    eq(Stats.last7([], today).filter(Boolean).length, 0);
+    eq(Stats.last7([today], today)[6], true);
+  });
+  await test('カテゴリ初期投入は1回だけ(3種)', async () => {
+    await freshDB(); await DB.seedIfNeeded();
+    eq((await DB.getAll('categories')).length, 3);
+  });
+  await test('ノート保存で疑問が「調査済み」になる', async () => {
+    const { q } = await setup();
+    eq((await DB.get('questions', q.id)).status, '調査済み');
+  });
+  await test('ノート削除しても問題は残り「情報源なし」(noteId=null)', async () => {
+    const { note, quiz } = await setup();
+    await DB.deleteNote(note.id);
+    eq((await DB.getAll('quizzes')).length, 1);
+    eq((await DB.get('quizzes', quiz.id)).noteId, null);
+  });
+  await test('問題削除で回答履歴も消える', async () => {
+    const { quiz } = await setup();
+    await DB.answerQuiz(quiz.id, 'B');
+    await DB.deleteQuiz(quiz.id);
+    eq((await DB.getAll('histories')).length, 0);
+  });
+  await test('回答履歴の保存(正解/まだ不安)', async () => {
+    const { quiz } = await setup();
+    eq((await DB.answerQuiz(quiz.id, 'B')).isCorrect, true);
+    eq((await DB.answerQuiz(quiz.id, 'unsure')).isCorrect, false);
+  });
+  await test('文字数制限・必須チェック', async () => {
+    await freshDB();
+    const cat = (await DB.getAll('categories'))[0];
+    let failed = 0;
+    try { await DB.addQuestion({ categoryId: cat.id, content: 'あ'.repeat(201) }); } catch { failed++; }
+    try { await DB.addQuestion({ categoryId: null, content: 'x' }); } catch { failed++; }
+    try { await DB.addQuiz({ noteId: null, questionText: 'Q', choices: {}, correctAnswer: 'A' }); } catch { failed++; }
+    eq(failed, 3);
+  });
+
+  const ng = results.filter(r => !r[1]).length;
+  document.getElementById('summary').textContent =
+    ng === 0 ? `✅ すべて合格(${results.length}件)` : `❌ ${ng}件失敗 / ${results.length}件`;
+  document.getElementById('log').innerHTML = results.map(([n, ok, m]) =>
+    `<li class="${ok ? 'ok' : 'ng'}">${ok ? '○' : '×'} ${n}${m ? ' … ' + m : ''}</li>`).join('');
+})();
+</script>
+</body></html>
