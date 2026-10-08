@@ -6,6 +6,7 @@
 <h2>自動テスト</h2><p id="summary">実行中…</p><ul id="log"></ul>
 <script src="js/stats.js"></script>
 <script src="js/db.js"></script>
+<script src="js/backup.js"></script>
 <script src="js/learn.js"></script>
 <script>
 const results = [];
@@ -144,6 +145,34 @@ async function setup() { // カテゴリ・疑問・ノート・問題を1つず
     await DB.deleteQuestion(r.entries[0].question.id);
     r = await Learn.loadNotes();
     eq(r.entries.length, 0); eq(r.orphans.length, 1, '問題は情報源なしで残る');
+  });
+
+  await test('バックアップ: 書き出し→全置換で復元できる', async () => {
+    const { quiz } = await setup();
+    await DB.answerQuiz(quiz.id, 'B');
+    const data = JSON.parse(JSON.stringify(await Backup.export()));
+    await freshDB();
+    await Backup.import(data, 'replace');
+    eq((await DB.getAll('questions')).length, 1); eq((await DB.getAll('notes')).length, 1);
+    eq((await DB.getAll('quizzes')).length, 1); eq((await DB.getAll('histories')).length, 1);
+  });
+  await test('バックアップ: 追加は重複せず、カテゴリは名前で統合', async () => {
+    await setup();
+    const data = JSON.parse(JSON.stringify(await Backup.export()));
+    await freshDB();                                  // 別端末(初期カテゴリのidが違う)
+    await Backup.import(data, 'merge');
+    await Backup.import(data, 'merge');               // 2回入れても増えない
+    eq((await DB.getAll('categories')).length, 3, 'カテゴリが重複しない');
+    eq((await DB.getAll('questions')).length, 1); eq((await DB.getAll('quizzes')).length, 1);
+    const q = (await DB.getAll('questions'))[0];
+    eq(!!(await DB.get('categories', q.categoryId)), true, '疑問のカテゴリが存在する');
+  });
+  await test('バックアップ: 不正なファイルは拒否し、データを変更しない', async () => {
+    await setup();
+    let failed = 0;
+    try { await Backup.import({ app: 'other' }, 'replace'); } catch { failed++; }
+    try { await Backup.import({ app: 'pharma-app', schemaVersion: 1, categories: [] }, 'replace'); } catch { failed++; }
+    eq(failed, 2); eq((await DB.getAll('questions')).length, 1);
   });
 
   const ng = results.filter(r => !r[1]).length;
