@@ -93,7 +93,7 @@ Screens.quizEdit = async function ({ noteId, quizId }) {
         if (quiz) await DB.updateQuiz(quiz.id, data);
         else await DB.addQuiz({ noteId: srcNoteId, ...data });
       } catch (e) { return toast(e.message); }
-      toast(quiz ? '問題を更新しました' : '問題を登録しました');
+      toast(quiz ? '問題を更新しました' : '問題を登録しました', 'joy');
       if (quiz) return App.back();
       s.mode = 'done'; render();
     };
@@ -101,7 +101,7 @@ Screens.quizEdit = async function ({ noteId, quizId }) {
 
   function doneView() {
     root.innerHTML = `
-      <div class="card center"><div class="bigicon">✅</div>
+      <div class="card center">${Frog.img('joy', 'body', 110)}
         <div class="qtext">問題を登録しました</div></div>
       <button class="btn" id="more">同じノートから続けて問題を作る</button>
       <button class="btn ghost" id="fin">完了</button>`;
