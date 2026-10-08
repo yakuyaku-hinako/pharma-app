@@ -1,9 +1,10 @@
 // コードを更新して再公開するときは、この番号を上げてください(例: v5)
-const CACHE = 'pharma-app-v7';
+const CACHE = 'pharma-app-v8';
 const FILES = ['./', './index.html', './style.css', './manifest.json',
-  './js/stats.js', './js/db.js', './js/ui.js', './js/learn.js', './js/backup.js', './js/screens/stats.js', './js/screens/settings.js', './js/screens/home.js', './js/screens/database.js', './js/screens/noteDetail.js', './js/screens/quiz.js',
+  './js/stats.js', './js/db.js', './js/ui.js', './js/frog.js', './js/learn.js', './js/backup.js', './js/screens/stats.js', './js/screens/settings.js', './js/screens/home.js', './js/screens/database.js', './js/screens/noteDetail.js', './js/screens/quiz.js',
   './js/screens/register.js', './js/screens/note.js', './js/screens/quizEdit.js',
-  './js/app.js', './icons/icon-180.png'];
+  './js/app.js', './icons/icon-180.png',
+  './frog/face/joy.svg', './frog/face/angry.svg', './frog/face/sad.svg', './frog/face/fun.svg', './frog/face/surprise.svg', './frog/face/fight.svg', './frog/face/shy.svg', './frog/face/worry.svg', './frog/face/understand.svg', './frog/body/joy.svg', './frog/body/angry.svg', './frog/body/sad.svg', './frog/body/fun.svg', './frog/body/surprise.svg', './frog/body/fight.svg', './frog/body/shy.svg', './frog/body/worry.svg', './frog/body/understand.svg'];
 
 // ファイルが1つ欠けていても全体が失敗しないように、1つずつ保存する
 self.addEventListener('install', e => {
