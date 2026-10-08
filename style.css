@@ -46,3 +46,22 @@ textarea{resize:vertical}
 .back{border:0;background:none;color:var(--primary);font-size:16px;padding:6px 8px 6px 0}
 .toast{position:fixed;left:50%;bottom:100px;transform:translateX(-50%);background:#1d2b26;
   color:#fff;padding:10px 16px;border-radius:999px;font-size:14px;z-index:10;max-width:90%}
+
+/* ---- 問題作成・プレビュー ---- */
+input[type=radio]{width:auto}
+.btn.ghost{background:#fff;color:var(--primary);border:1px solid var(--primary);margin-top:10px}
+.card .btn{margin-top:14px}
+.opt-edit{display:flex;gap:8px;align-items:flex-start;margin-bottom:8px}
+.radio{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:44px;padding-top:6px}
+.optk{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;
+  border-radius:50%;background:var(--light);color:var(--primary);font-weight:700;font-size:14px}
+.tiny{font-size:11px}.note{font-weight:400;font-size:11px}
+.opt{display:flex;align-items:center;gap:10px;border:1px solid #cfe3da;border-radius:12px;
+  padding:12px;margin:8px 0;background:#fbfefd}
+.opt span:nth-child(2){flex:1;white-space:pre-wrap}
+.opt.ok{background:var(--light);border-color:var(--primary)}
+.opt.unsure{background:#f4f4f4;border-style:dashed;color:var(--sub)}
+.tick{color:var(--primary);font-size:13px}
+.big{font-size:17px;font-weight:600}
+.src summary{font-size:14px;color:var(--primary);font-weight:600}
+.center{text-align:center}.bigicon{font-size:40px}
