@@ -40,6 +40,7 @@ const DB = (() => {
   const get = (s, id) => run(s, 'readonly', st => st.get(id));
   const put = (s, obj) => run(s, 'readwrite', st => st.put(obj));
   const remove = (s, id) => run(s, 'readwrite', st => st.delete(id));
+  const clear = s => run(s, 'readwrite', st => st.clear());
 
   // ---- 初期データ ----
   async function seedIfNeeded() {
@@ -129,7 +130,7 @@ const DB = (() => {
     await remove('questions', questionId);
   }
 
-  return { open, close, destroy, getAll, get, put, remove, uuid, seedIfNeeded,
+  return { open, close, destroy, getAll, get, put, remove, clear, uuid, seedIfNeeded,
            addQuestion, saveNote, addQuiz, updateQuiz, answerQuiz,
            deleteNote, deleteQuiz, deleteQuestion };
 })();
