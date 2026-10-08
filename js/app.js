@@ -1,5 +1,5 @@
 // 画面の切り替え(タブ + 戻れる子画面)
-const TITLES = { stats: '成績' };
+const TITLES = {};   // すべての画面を実装済み
 
 // まだ作っていない画面は仮表示
 for (const t of Object.keys(TITLES)) {
