@@ -14,12 +14,15 @@ function node(html) {
   return d;
 }
 
-function toast(msg) {
+function toast(msg, frog) {
   const t = document.createElement('div');
   t.className = 'toast';
-  t.textContent = msg;
+  if (frog) {                                   // 第2引数にカエルの表情名を渡すと顔つきで表示
+    t.innerHTML = Frog.img(frog, 'face', 34);
+    const sp = document.createElement('span'); sp.textContent = msg; t.append(sp);
+  } else t.textContent = msg;
   document.body.append(t);
-  setTimeout(() => t.remove(), 1800);
+  setTimeout(() => t.remove(), frog ? 2600 : 1800);
 }
 
 function fmtDate(iso) { return new Date(iso).toLocaleDateString('ja-JP'); }
