@@ -38,6 +38,7 @@ Screens.quiz = async function (params) {
     const it = map[ids[S.idx]], q = it.quiz, ok = S.last.isCorrect;
     const lastQ = S.idx + 1 >= total;
     root.innerHTML = `${header()}
+      <div class="frogrow">${Frog.img(ok ? 'joy' : 'worry', 'body', 96)}</div>
       <div class="banner ${ok ? 'ok' : 'ng'}">${ok ? '✓ 正解!' : '✗ 不正解'}</div>
       <div class="card">
         <div class="lbl">あなたの回答</div>
@@ -61,7 +62,7 @@ Screens.quiz = async function (params) {
 
   function doneView() {
     root.innerHTML = `
-      <div class="card center"><div class="bigicon">🐸</div>
+      <div class="card center">${Frog.img(S.correct === total ? 'fun' : S.correct * 2 >= total ? 'joy' : 'fight', 'body', 120)}
         <div class="qtext big">お疲れさまでした!</div>
         <div class="score">${S.correct} / ${total} 問正解</div></div>
       <button class="btn" id="home">ホームへ</button>`;
