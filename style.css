@@ -65,3 +65,29 @@ input[type=radio]{width:auto}
 .big{font-size:17px;font-weight:600}
 .src summary{font-size:14px;color:var(--primary);font-weight:600}
 .center{text-align:center}.bigicon{font-size:40px}
+
+/* ---- ホーム・クイズ ---- */
+.hero{display:flex;gap:12px;align-items:center;margin-bottom:12px}
+.hero h1{margin:0 0 2px}.frog{font-size:48px}
+.streak{font-size:16px}.streak b{font-size:22px;color:var(--primary)}
+.dots{display:flex;gap:8px;margin-top:10px}
+.dot{width:14px;height:14px;border-radius:50%;background:#d8e8e1;display:inline-block}
+.dot.on{background:var(--primary)}
+.statrow{display:flex;justify-content:space-between;padding:6px 0;font-size:15px}
+.bar{height:8px;background:#e3efe9;border-radius:99px;overflow:hidden;margin-bottom:6px}
+.bar i{display:block;height:100%;background:var(--primary)}
+.empty{background:var(--light);color:var(--primary);border-radius:10px;padding:10px;
+  text-align:center;margin:8px 0;font-size:14px}
+.btn:disabled{opacity:.4}
+.qhead{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.progress{flex:1;height:8px;background:#e3efe9;border-radius:99px;overflow:hidden}
+.progress i{display:block;height:100%;background:var(--primary)}
+.opt.pick{width:100%;text-align:left;font-size:15px;font-family:inherit;color:var(--text)}
+.opt.pick.on{background:var(--light);border-color:var(--primary)}
+.opt.bad{background:#fdecea;border-color:#d9534f}
+.badge.gray{background:#9aa9a2}
+.banner{border-radius:12px;padding:14px;font-size:20px;font-weight:700;text-align:center;margin-bottom:12px}
+.banner.ok{background:var(--primary);color:#fff}
+.banner.ng{background:#d9534f;color:#fff}
+.score{font-size:24px;font-weight:700;color:var(--primary);margin-top:6px}
+.link{color:var(--primary);font-weight:600;font-size:14px}
