@@ -23,6 +23,7 @@ Screens.note = async function ({ questionId }) {
       <div class="lbl">薬剤師POINT</div>
       <textarea id="pp" rows="3">${esc(note?.pharmacistPoint)}</textarea>
       <button class="btn" id="save">保存する</button>
+      <button class="btn ghost" id="saveQuiz">保存して問題を作る</button>
     </div>`);
 
   const $ = s => root.querySelector(s);
@@ -32,17 +33,25 @@ Screens.note = async function ({ questionId }) {
   };
   count('#rc', '#rcn'); count('#ma', '#man');
 
-  $('#back').addEventListener('click', () => App.back());
-  $('#save').addEventListener('click', async () => {
+  async function save() {
     const researchedContent = $('#rc').value.trim();
-    if (!researchedContent) return toast('調べた内容を入力してください');
-    await DB.saveNote(questionId, {
+    if (!researchedContent) { toast('調べた内容を入力してください'); return null; }
+    const saved = await DB.saveNote(questionId, {
       researchedContent,
       myAnswer: $('#ma').value.trim(),
       pharmacistPoint: $('#pp').value.trim()
     });
     toast('学習ノートを保存しました');
-    App.back();
+    return saved;
+  }
+
+  $('#back').addEventListener('click', () => App.back());
+  $('#save').addEventListener('click', async () => { if (await save()) App.back(); });
+  $('#saveQuiz').addEventListener('click', async () => {
+    const saved = await save();
+    if (!saved) return;
+    App.stack.pop();                                   // ノート画面を閉じて
+    App.open(Screens.quizEdit, { noteId: saved.id });  // 問題作成へ
   });
   return root;
 };
