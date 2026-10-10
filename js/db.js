@@ -41,6 +41,13 @@ const DB = (() => {
   const put = (s, obj) => run(s, 'readwrite', st => st.put(obj));
   const remove = (s, id) => run(s, 'readwrite', st => st.delete(id));
   const clear = s => run(s, 'readwrite', st => st.clear());
+  // 複数の保管庫を1回の処理でまとめて消す(途中で失敗したら、何も消えない)
+  const clearMany = stores => new Promise((resolve, reject) => {
+    const t = db.transaction(stores, 'readwrite');
+    stores.forEach(s => t.objectStore(s).clear());
+    t.oncomplete = () => resolve();
+    t.onerror = t.onabort = () => reject(t.error || new Error('削除に失敗しました'));
+  });
 
   // ---- 初期データ ----
   async function seedIfNeeded() {
@@ -130,7 +137,7 @@ const DB = (() => {
     await remove('questions', questionId);
   }
 
-  return { open, close, destroy, getAll, get, put, remove, clear, uuid, seedIfNeeded,
+  return { open, close, destroy, getAll, get, put, remove, clear, clearMany, uuid, seedIfNeeded,
            addQuestion, saveNote, addQuiz, updateQuiz, answerQuiz,
            deleteNote, deleteQuiz, deleteQuestion };
 })();
