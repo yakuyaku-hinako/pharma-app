@@ -50,6 +50,18 @@ const Backup = {
     return added;
   },
 
+  // 学習データ(疑問・ノート・問題・回答履歴)をすべて削除して初期状態に戻す。
+  // カテゴリ(初期の3種)、最終バックアップ日などの設定、テーマ、カエルは消さない。
+  DATA_STORES: ['histories', 'quizzes', 'notes', 'questions'],
+  async resetAll(clearIntroFlag = true) {
+    await DB.clearMany(Backup.DATA_STORES);             // 1回の処理で削除(失敗したら何も消えない)
+    for (const s of Backup.DATA_STORES) {               // 本当に空になったか確認
+      if ((await DB.getAll(s)).length > 0) throw new Error('削除を確認できませんでした(' + s + ')');
+    }
+    await DB.seedIfNeeded();
+    if (clearIntroFlag) { try { localStorage.removeItem('pharma-intro-seen'); } catch {} }  // 初回の案内を再表示
+  },
+
   lastDate() {
     try { const v = localStorage.getItem(Backup.KEY); return v ? Number(v) : null; } catch { return null; }
   },
