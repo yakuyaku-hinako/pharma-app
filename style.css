@@ -133,3 +133,12 @@ input[type=file]{margin:10px 0;font-size:14px;padding:8px}
 .qbody{margin-top:10px;border-top:1px solid #e3efe9;padding-top:6px}
 .hrow{display:flex;gap:8px;font-size:13px;padding:5px 0;border-top:1px solid #eef5f1}
 .hrow .grow{flex:1}.okc{color:var(--primary)}.ngc{color:#d9534f}
+
+/* ---- 確認画面・削除ボタン ---- */
+.dangerbtn,.btn.dangerbtn{background:#d9534f;color:#fff;border:0}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:20;padding:16px}
+.dialog{background:#fff;border-radius:16px;padding:18px;width:100%;max-width:360px;max-height:90%;overflow:auto}
+.dialog h3{margin:8px 0;font-size:17px}
+.dbody{white-space:pre-wrap;font-size:14px;line-height:1.6;color:var(--text)}
+.dbtns{display:flex;gap:10px;margin-top:16px}
+.dbtns .btn{margin:0;flex:1;padding:12px}
