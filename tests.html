@@ -136,7 +136,7 @@ async function setup() { // カテゴリ・疑問・ノート・問題を1つず
     eq(Learn.matches(e, '相互作用'), true, 'タグ'); eq(Learn.matches(e, 'NSAIDs 出血'), true, 'AND');
     eq(Learn.matches(e, 'NSAIDs 腎機能'), false); eq(Learn.matches(e, ''), true);
   });
-  await test('データベース一覧: ★と情報源なしの分離', async () => {
+  await test('学習記録一覧: ★と情報源なしの分離', async () => {
     const { note, quiz } = await setup();
     let r = await Learn.loadNotes();
     eq(r.entries[0].stars, 0, '未回答'); eq(r.entries[0].last, null);
@@ -187,6 +187,40 @@ async function setup() { // カテゴリ・疑問・ノート・問題を1つず
   await test('Frog.img: 不明な表情名は喜に置き換える', () => {
     eq(Frog.img('xxx').includes('face/joy.svg'), true);
     eq(Frog.img('worry', 'body', 50).includes('body/worry.svg'), true);
+  });
+
+  await test('最新の回答結果: 未回答/正解/不正解(履歴の並び順に依存しない)', () => {
+    const h = (t, ok) => ({ answeredAt: new Date(t).toISOString(), isCorrect: ok });
+    eq(Stats.lastResult([]), 'none');
+    eq(Stats.lastResult([h(1000, false), h(2000, true)]), 'correct');
+    eq(Stats.lastResult([h(2000, true), h(1000, false)]), 'correct', '順序に依存しない');
+    eq(Stats.lastResult([h(1000, true), h(2000, false)]), 'wrong', '過去の正解が最新を上書きしない');
+  });
+  await test('理解度フィルター(0〜3・すべて)', () => {
+    eq(Learn.starOk(0, 'all'), true); eq(Learn.starOk(0, 0), true);
+    eq(Learn.starOk(0, 1), false); eq(Learn.starOk(3, 3), true); eq(Learn.starOk(2, 3), false);
+  });
+  await test('問題一覧フィルター: 回答状況と理解度を併用できる', () => {
+    const rows = [{ status: 'wrong', stars: 1 }, { status: 'wrong', stars: 2 }, { status: 'correct', stars: 1 },
+                  { status: 'none', stars: 0 }, { status: 'correct', stars: 3 }];
+    eq(Learn.filterQuizzes(rows, {}).length, 5, 'すべて');
+    eq(Learn.filterQuizzes(rows, { status: 'none' }).length, 1, '未回答');
+    eq(Learn.filterQuizzes(rows, { status: 'correct' }).length, 2);
+    eq(Learn.filterQuizzes(rows, { status: 'wrong', stars: 1 }).length, 1, '不正解かつ★1');
+    eq(Learn.filterQuizzes(rows, { stars: 0 }).length, 1, '未設定(0)');
+    eq(Learn.filterQuizzes(rows, { status: 'correct', stars: 2 }).length, 0);
+  });
+  await test('問題一覧: 最新の回答で分類し、一覧の表示でデータは変わらない', async () => {
+    const { quiz } = await setup();
+    let r = Learn.quizRow((await Learn.load()).items[0]);
+    eq(r.status, 'none'); eq(r.stars, 0);
+    await DB.answerQuiz(quiz.id, 'B', new Date(2000));      // 正解
+    await DB.answerQuiz(quiz.id, 'A', new Date(1000));      // 過去の不正解(あとから保存)
+    r = Learn.quizRow((await Learn.load()).items[0]);
+    eq(r.status, 'correct', '最新(日時)の回答で判定'); eq(r.total, 2); eq(r.stars, 2, '1/2=50%→★2');
+    Learn.filterQuizzes([r], { status: 'wrong' });
+    eq((await DB.getAll('histories')).length, 2, '履歴は変更されない');
+    eq((await DB.getAll('quizzes')).length, 1);
   });
 
   const ng = results.filter(r => !r[1]).length;
