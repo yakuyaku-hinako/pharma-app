@@ -242,6 +242,33 @@ async function setup() { // カテゴリ・疑問・ノート・問題を1つず
     eq(STAR_FILTERS[1][1], '未回答'); eq(STAR_FILTERS[1][0], 0);
   });
 
+  await test('すべて削除: 学習データだけ消え、カテゴリ(初期3種)は残る', async () => {
+    const { quiz } = await setup();
+    await DB.answerQuiz(quiz.id, 'B');
+    await Backup.resetAll(false);
+    for (const s of ['questions', 'notes', 'quizzes', 'histories'])
+      eq((await DB.getAll(s)).length, 0, s + ' が空');
+    eq((await DB.getAll('categories')).length, 3, 'カテゴリは残る');
+    const d = await Learn.load();
+    eq(d.items.length, 0); eq(Stats.streak(d.activity), 0, '連続日数も0');
+  });
+  await test('すべて削除: DBを開き直しても復活しない(再読み込み相当)', async () => {
+    const name = 'test-reload-' + Math.random();
+    await DB.open(name); await DB.seedIfNeeded();
+    const cat = (await DB.getAll('categories'))[0];
+    await DB.addQuestion({ categoryId: cat.id, content: '消える疑問' });
+    await Backup.resetAll(false);
+    DB.close(); await DB.open(name);
+    eq((await DB.getAll('questions')).length, 0);
+  });
+  await test('すべて削除: 失敗したら何も消えず、エラーになる', async () => {
+    await setup();
+    let failed = false;
+    try { await DB.clearMany(['questions', 'ない保管庫']); } catch { failed = true; }
+    eq(failed, true, 'エラーが通知される');
+    eq((await DB.getAll('questions')).length, 1, 'データは残っている');
+  });
+
   const ng = results.filter(r => !r[1]).length;
   document.getElementById('summary').textContent =
     ng === 0 ? `✅ すべて合格(${results.length}件)` : `❌ ${ng}件失敗 / ${results.length}件`;
