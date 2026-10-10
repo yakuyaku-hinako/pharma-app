@@ -25,7 +25,9 @@ Screens.stats = async function () {
     <div class="card">${rows.map(r => `
       <div class="statrow"><span>${esc(r.name)}</span><b>${r.pct}%</b></div>
       <div class="bar"><i style="width:${r.pct}%"></i></div>`).join('')}</div>
+    <button class="btn" id="qlist">問題一覧を見る ›</button>
     <button class="btn ghost" id="settings">⚙ 設定・バックアップ</button>`);
+  root.querySelector('#qlist').onclick = () => App.open(Screens.quizList);
   root.querySelector('#settings').onclick = () => App.open(Screens.settings);
   return root;
 };
