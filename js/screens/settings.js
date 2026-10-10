@@ -23,6 +23,12 @@ Screens.settings = async function () {
         <div><b>ちょっと待って!</b><div class="tiny">今のデータがすべて消えます。先にバックアップを保存しましたか?</div></div></div>
       <input type="file" id="file" accept=".json,application/json,text/plain">
       <button class="btn ghost" id="restore">復元する</button>
+    </div>
+    <div class="card">
+      <div class="lbl">初期化</div>
+      <div class="stop">${Frog.img('angry', 'body', 72)}
+        <div><b>ちょっと待って!</b><div class="tiny">学習記録・問題・回答履歴がすべて消えます。先にバックアップを保存してください。</div></div></div>
+      <button class="btn dangerbtn" id="reset">すべての学習データを削除</button>
     </div>`);
   const $ = s => root.querySelector(s);
   $('#back').onclick = () => App.back();
@@ -69,6 +75,23 @@ Screens.settings = async function () {
       toast(`復元しました(疑問${a.questions}件・問題${a.quizzes}件)`, 'joy');
       App.show();
     } catch (e) { toast('復元に失敗しました: ' + e.message); }
+  };
+
+  $('#reset').onclick = async () => {
+    const n = {};
+    for (const k of Backup.DATA_STORES) n[k] = (await DB.getAll(k)).length;
+    const ok = await confirmDialog({
+      title: 'すべての学習データを削除しますか?',
+      body: `削除するもの:\n・疑問 ${n.questions}件\n・学習記録(ノート) ${n.notes}件\n・登録した問題 ${n.quizzes}件\n・回答履歴 ${n.histories}件\n\n削除すると元に戻せません。バックアップを取っていない場合は、先に保存してください。`,
+      okLabel: 'すべて削除', cancelLabel: 'キャンセル', danger: true, frog: 'angry'
+    });
+    if (!ok) return;
+    try { await Backup.resetAll(); }
+    catch (e) { return toast('削除に失敗しました。データは変更されていません: ' + e.message); }
+    Object.assign(DBView, { q: '', cat: 'all', star: 'all' });    // 画面の絞り込みも初期状態へ
+    Object.assign(QView, { status: 'all', star: 'all' });
+    toast('初期状態に戻しました', 'joy');
+    await App.switchTab('home');
   };
   return root;
 };
