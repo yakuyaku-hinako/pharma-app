@@ -1,3 +1,5 @@
+// 理解度フィルターの選択肢(学習記録・問題一覧で共通): 0=未設定 / 1〜3=★の数
+const STAR_FILTERS = [['all', 'すべて'], [0, '未設定(0)'], [1, '★1'], [2, '★2'], [3, '★3']];
 // 出題ロジックと、画面で使うデータのまとめ読み込み
 const QuizSelector = {
   // 新規を優先して n 問選び、足りなければ復習で補充。出題順はランダム。
@@ -37,7 +39,7 @@ const Learn = {
     });
     return { items, histories, cats, catOfQuiz };
   },
-  // ノート単位の一覧(データベース画面用)。情報源なしの問題は orphans に分ける
+  // ノート単位の一覧(学習記録画面用)。情報源なしの問題は orphans に分ける
   async loadNotes() {
     const d = await Learn.load();
     const [notes, questions] = await Promise.all([DB.getAll('notes'), DB.getAll('questions')]);
@@ -61,5 +63,21 @@ const Learn = {
     const hay = norm([entry.question.content, entry.note.researchedContent,
       entry.note.myAnswer, ...(entry.question.tags || [])].join('\n'));
     return norm(query).split(/\s+/).filter(Boolean).every(w => hay.includes(w));
+  },
+
+  // 理解度フィルター: f は 'all' または 0〜3
+  starOk(stars, f) { return f === 'all' || stars === f; },
+
+  // 問題1件を一覧用に整形(最新の回答結果・正答数・理解度★)。データは変更しない
+  quizRow(item) {
+    const hs = item.histories;
+    const correct = hs.filter(h => h.isCorrect).length;
+    return { ...item, status: Stats.lastResult(hs), correct, total: hs.length,
+             stars: Stats.stars(correct, hs.length) };
+  },
+
+  // 回答状況('all'/'none'/'correct'/'wrong')と理解度の併用フィルター
+  filterQuizzes(rows, { status = 'all', stars = 'all' } = {}) {
+    return rows.filter(r => (status === 'all' || r.status === status) && Learn.starOk(r.stars, stars));
   }
 };
