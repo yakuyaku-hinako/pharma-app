@@ -26,3 +26,26 @@ function toast(msg, frog) {
 }
 
 function fmtDate(iso) { return new Date(iso).toLocaleDateString('ja-JP'); }
+
+// アプリ内の確認画面。OKなら true、キャンセル(外側をタップも含む)なら false を返す
+function confirmDialog({ title, body, okLabel = 'OK', cancelLabel = 'キャンセル', danger = false, frog = null }) {
+  return new Promise(resolve => {
+    const wrap = document.createElement('div');
+    wrap.className = 'modal';
+    wrap.innerHTML = `<div class="dialog" role="dialog" aria-modal="true">
+      ${frog ? `<div class="center">${Frog.img(frog, 'body', 72)}</div>` : ''}
+      <h3></h3><div class="dbody"></div>
+      <div class="dbtns"><button class="btn ghost" data-r="0"></button>
+        <button class="btn ${danger ? 'dangerbtn' : ''}" data-r="1"></button></div></div>`;
+    wrap.querySelector('h3').textContent = title;
+    wrap.querySelector('.dbody').textContent = body;
+    wrap.querySelector('[data-r="0"]').textContent = cancelLabel;
+    wrap.querySelector('[data-r="1"]').textContent = okLabel;
+    const done = v => { wrap.remove(); resolve(v); };
+    wrap.addEventListener('click', e => {
+      const r = e.target.dataset && e.target.dataset.r;
+      if (r !== undefined) done(r === '1'); else if (e.target === wrap) done(false);
+    });
+    document.body.append(wrap);
+  });
+}
