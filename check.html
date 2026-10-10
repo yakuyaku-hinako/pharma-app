@@ -9,7 +9,7 @@
 // [ファイル, [最新版に含まれる目印の文字列...]]
 const CHECKS = [
   ['index.html', ['js/screens/quizList.js', 'js/frog.js', 'js/backup.js']],
-  ['sw.js', ['pharma-app-v10']],
+  ['sw.js', ['pharma-app-v11']],
   ['style.css', ['.qitem']],
   ['js/stats.js', ['lastResult']],
   ['js/learn.js', ['STAR_FILTERS', 'filterQuizzes', 'activity']],
@@ -19,9 +19,11 @@ const CHECKS = [
   ['js/screens/quizList.js', ['Screens.quizList']],
   ['js/screens/quizEdit.js', ['Screens.quizEdit']],
   ['js/frog.js', ['Frog']],
-  ['js/backup.js', ['Backup']],
-  ['js/db.js', ['clear']],
+  ['js/backup.js', ['resetAll']],
+  ['js/db.js', ['clearMany']],
   ['js/app.js', ['App']],
+  ['js/ui.js', ['confirmDialog']],
+  ['js/screens/settings.js', ['resetAll']],
 ];
 (async () => {
   let bad = 0; const out = [];
