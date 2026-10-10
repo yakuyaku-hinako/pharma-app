@@ -223,6 +223,25 @@ async function setup() { // カテゴリ・疑問・ノート・問題を1つず
     eq((await DB.getAll('quizzes')).length, 1);
   });
 
+  await test('連続学習: 疑問の登録・ノート作成・問題作成でもカウントされる(回答なし)', async () => {
+    const { q, note, quiz } = await setup();
+    const day = n => { const x = new Date(); x.setHours(12, 0, 0, 0); x.setDate(x.getDate() - n); return x.toISOString(); };
+    await DB.put('questions', { ...q, createdAt: day(2) });      // 2日前: 疑問を登録
+    await DB.put('notes', { ...note, createdAt: day(1) });       // 昨日: 学習記録をつけた
+    await DB.put('quizzes', { ...quiz, createdAt: day(0) });     // 今日: 問題を作成
+    const d = await Learn.load();
+    eq(d.histories.length, 0, '回答履歴はなし');
+    eq(Stats.streak(d.activity), 3);
+    eq(Stats.last7(d.activity).filter(Boolean).length, 3);
+  });
+  await test('連続学習: 何もなければ0日', async () => {
+    await freshDB();
+    eq(Stats.streak((await Learn.load()).activity), 0);
+  });
+  await test('理解度フィルターの「未回答」(0)', () => {
+    eq(STAR_FILTERS[1][1], '未回答'); eq(STAR_FILTERS[1][0], 0);
+  });
+
   const ng = results.filter(r => !r[1]).length;
   document.getElementById('summary').textContent =
     ng === 0 ? `✅ すべて合格(${results.length}件)` : `❌ ${ng}件失敗 / ${results.length}件`;
