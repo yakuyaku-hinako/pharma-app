@@ -1,5 +1,5 @@
 // 理解度フィルターの選択肢(学習記録・問題一覧で共通): 0=未設定 / 1〜3=★の数
-const STAR_FILTERS = [['all', 'すべて'], [0, '未設定(0)'], [1, '★1'], [2, '★2'], [3, '★3']];
+const STAR_FILTERS = [['all', 'すべて'], [0, '未回答'], [1, '★1'], [2, '★2'], [3, '★3']];
 // 出題ロジックと、画面で使うデータのまとめ読み込み
 const QuizSelector = {
   // 新規を優先して n 問選び、足りなければ復習で補充。出題順はランダム。
@@ -37,7 +37,10 @@ const Learn = {
       const hs = hBy[quiz.id] || [];
       return { quiz, note, question, category, histories: hs, isNew: Stats.isNew(hs) };
     });
-    return { items, histories, cats, catOfQuiz };
+    // 連続学習日数の対象にする活動日時(問題を解いた・疑問を登録・ノートを作成・問題を作成)
+    const activity = [...histories.map(h => h.answeredAt), ...questions.map(q => q.createdAt),
+                      ...notes.map(n => n.createdAt), ...quizzes.map(q => q.createdAt)];
+    return { items, histories, cats, catOfQuiz, activity };
   },
   // ノート単位の一覧(学習記録画面用)。情報源なしの問題は orphans に分ける
   async loadNotes() {
