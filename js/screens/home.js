@@ -3,7 +3,7 @@ Screens.home = async function () {
   const d = await Learn.load();
   const newN = d.items.filter(i => i.isNew).length;
   const revN = d.items.length - newN;
-  const dates = d.histories.map(h => h.answeredAt);
+  const dates = d.activity;   // 問題を解いた・疑問を登録・ノートを作成・問題を作成
   const streak = Stats.streak(dates);
   const dots = Stats.last7(dates);
   const catRows = [...d.cats].sort((a, b) => a.sortOrder - b.sortOrder).map(c => {
