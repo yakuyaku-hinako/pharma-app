@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ファイル確認</title>
+<style>body{font-family:sans-serif;padding:16px;line-height:1.6}li{margin:6px 0}.ok{color:#1a7f4b}.ng{color:#c00;font-weight:bold}small{color:#666}</style>
+</head><body>
+<h2>公開ファイルの確認</h2>
+<p id="summary">確認中…</p><ul id="log"></ul>
+<script>
+// [ファイル, [最新版に含まれる目印の文字列...]]
+const CHECKS = [
+  ['index.html', ['js/screens/quizList.js', 'js/frog.js', 'js/backup.js']],
+  ['sw.js', ['pharma-app-v10']],
+  ['style.css', ['.qitem']],
+  ['js/stats.js', ['lastResult']],
+  ['js/learn.js', ['STAR_FILTERS', 'filterQuizzes', 'activity']],
+  ['js/screens/home.js', ['d.activity']],
+  ['js/screens/database.js', ['sfilter']],
+  ['js/screens/stats.js', ['qlist']],
+  ['js/screens/quizList.js', ['Screens.quizList']],
+  ['js/screens/quizEdit.js', ['Screens.quizEdit']],
+  ['js/frog.js', ['Frog']],
+  ['js/backup.js', ['Backup']],
+  ['js/db.js', ['clear']],
+  ['js/app.js', ['App']],
+];
+(async () => {
+  let bad = 0; const out = [];
+  for (const [path, marks] of CHECKS) {
+    try {
+      const r = await fetch(path + '?t=' + Date.now(), { cache: 'no-store' });
+      if (!r.ok) { bad++; out.push(`<li class="ng">× ${path} … 見つかりません(${r.status})。この場所にファイルがありません</li>`); continue; }
+      const t = await r.text();
+      const miss = marks.filter(m => !t.includes(m));
+      if (miss.length) { bad++; out.push(`<li class="ng">× ${path} … 古い内容のままです<br><small>(最新版にある「${miss.join('」「')}」が見つかりません)</small></li>`); }
+      else out.push(`<li class="ok">○ ${path}</li>`);
+    } catch (e) { bad++; out.push(`<li class="ng">× ${path} … 読み込めません</li>`); }
+  }
+  document.getElementById('log').innerHTML = out.join('');
+  document.getElementById('summary').textContent = bad === 0 ? '✅ すべて最新です' : `❌ ${bad}件に問題があります(赤いファイルを入れ替えてください)`;
+})();
+</script></body></html>
